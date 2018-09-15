@@ -1,0 +1,165 @@
+<html>
+	<head>
+		<link rel="stylesheet" type="text/css" href="main.css">
+	</head>
+	<script src="https://cdn.jsdelivr.net/jquery/2.2.4/jquery.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+	<script src="https://sdk.clarifai.com/js/clarifai-latest.js"></script>
+	<script src='http://okfnlabs.org/wikipediajs/wikipedia.js'></script>
+	<script>
+		function initialize2(){
+			
+			infoDiv = document.getElementById('infoDiv');
+			selectedImage = document.getElementById('selectedImage');
+			selectedImageContainer = document.getElementById('selectedImageContainer');
+			spaceRotation = document.getElementById('spaceRotation');
+			planets = document.getElementsByClassName('planet');
+			planetContainers = document.getElementsByClassName('planetContainer');
+			url = document.getElementById("imageUrl");
+			wikiTitle = document.getElementById("wikiTitle");
+			wikiDiv = document.getElementById("wikiDiv");
+			wikiDiv2 = document.getElementById("wikiDiv2");
+			
+			wikiTitle.style.width = wikiDiv.offsetWidth - 50+ "px";
+			//file = document.getElementById("fileField");
+			
+			var path = document.location.pathname;
+			dir = path.substr(0, path.lastIndexOf('/')+1);
+		
+			setWidthSelectedImage();
+			setPlanetSize();
+			setInterval(rotate, 100);
+		}
+		
+		function setWidthSelectedImage(){
+			var height = infoDiv.offsetHeight;
+			selectedImageContainer.style.width = height + "px";
+	
+			var offset = -1 * (selectedImage.offsetWidth/2 - height/2);
+			selectedImage.style.marginLeft = offset + "px";
+			
+			//alert(selectedImage.offsetHeight);
+			//alert(selectedImage.offsetWidth);
+				
+		}
+		
+		function setPlanetSize(){
+		
+			var height = spaceRotation.offsetHeight;
+			
+			for(var i = 0; i < planets.length; i++){
+				var offset = -1 * Math.abs(planets[i].offsetWidth/2 - height/2);
+				
+				planetContainers[i].style.transform = "rotate(0deg)";
+				planetContainers[i].style.width = height + "px";
+				planetContainers[i].style.left = (height * i + (70 * i)) + "px";
+				planets[i].style.marginLeft = offset + "px";
+			}
+		}
+		
+		function getRotationDegree(tr){
+			var values = tr.split('(')[1],
+			values = values.split(')')[0],
+			values = values.split(',');
+
+			var a = values[0];
+			var b = values[1];
+			var c = values[2];
+			var d = values[3];
+			
+			return Math.round(Math.atan2(b, a) * (180/Math.PI));;
+		}
+		
+		function rotate(){
+			for(var i = 0; i < planetContainers.length; i++){
+			
+				var style = planetContainers[i].currentStyle || window.getComputedStyle(planetContainers[i]);
+				var marginLeft = parseInt(style.marginLeft);
+				var left = parseInt(style.left);
+				var angle = getRotationDegree(style.transform) + 1 ;
+				planetContainers[i].style.marginLeft = marginLeft - 1 + "px";
+				planetContainers[i].style.transform = "rotate("+angle+"deg)";
+				
+				if(marginLeft < -1 * (spaceRotation.offsetHeight + left)){
+					planetContainers[i].style.marginLeft = 1400 + "px";
+				}
+			}
+		}
+		
+		function addPlanet(){
+			
+			if(url.value != null && url.value != ""){
+			
+				var planetContainer = document.createElement("DIV");
+				var planetImage = document.createElement("IMG");
+				
+				planetContainer.className = "planetContainer";
+				planetImage.className = "planet";
+				planetImage.src = url.value;
+				planetContainer.appendChild(planetImage);
+				spaceRotation.appendChild(planetContainer);
+				
+				setPlanetSize();
+			}
+			
+		}
+		
+		function openInfo(title, desc){
+			wikiTitle.innerHTML = title;
+			wikiDiv2.innerHTML = desc;
+			infoDiv.style.visibility = "initial";
+			selectedImage.src = url.value;
+			setWidthSelectedImage();
+			addPlanet();
+			
+		
+		}
+		
+		function closeInfo(){
+			infoDiv.style.visibility = "hidden";
+		}
+		
+		function resetInfo(){
+			wikiTitle.innerHTML = "";
+			wikiDiv.innerHTML = "";
+			wikiDiv2.innerHTML = "";
+		}
+	</script>
+	<body onload = "initialize2();">
+		<image id = "background" src = "space2.gif" />
+		<h2 id = "title">Selective Celestial Bodies</h2>
+		<div id = "spaceRotation">
+			<!--<div class = "planetContainer" >
+				<image class = "planet" src = "saturn.jpg"/>
+			</div>
+			<div class = "planetContainer" >
+				<image class = "planet" src = "earth.jpg"/>
+			</div>-->
+		</div>
+		
+		<div id = "infoDiv">
+			<div id = "selectedImageContainer">
+				<image id = "selectedImage"  src = "saturn.jpg"/>
+			</div>
+			<div id = "wikiDiv">
+				<span id = "wikiTitle">  </span>
+				<div id = "wikiDiv2">
+					
+				</div>
+			</div>
+			<div id = "exitInfo" onclick = "closeInfo();"> X </div>
+		</div>
+		<div id = "inputDiv">
+		<!-- imgur.com/gallery/mnb5Agr -->
+			<input type = "text" id = "imageUrl" value = "" placeholder = "URL"/>
+			<!--<span> -OR- </span>
+			<input type = "file" id = "fileField" accept="image/png, image/jpeg" onchange = "addPlanet();"/>-->
+			
+			<span id = "submitBtn"> Predict </span>
+		</div>
+		
+	</body>
+	<script type="text/javascript" src="keys.js"></script>
+	<script type="text/javascript" src="index.js"></script>
+</html> 
